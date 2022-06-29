@@ -279,6 +279,10 @@
       .fillAndStroke(fc, sc);
   };
 
+  canvas2pdf.PdfContext.prototype.fillAndStroke = function() {
+    this.doc.fillAndStroke();
+  };
+
   canvas2pdf.PdfContext.prototype.fill = function() {
     this.doc.fill();
   };
