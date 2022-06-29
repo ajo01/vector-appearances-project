@@ -29,10 +29,10 @@ Webviewer(
       ctx.beginPath();
       ctx.fillStyle = "green";
       ctx.arc(this.X, this.Y, 25, 0, 2 * Math.PI, false);
-      ctx.fill();
+
       ctx.strokeStyle = "orange";
       ctx.lineWidth = 2;
-      ctx.stroke();
+      ctx.fillAndStroke();
 
       ctx.textAlign = "center";
       ctx.strokeText("1", this.X, this.Y + 7);
