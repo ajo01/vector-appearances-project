@@ -4529,6 +4529,8 @@ PDF tiling pattern support. Uncolored only.
                 }
               }
 
+              var fillColor, strokeColor;
+
               const { number: number$1 } = PDFObject; // This constant is used to approximate a symmetrical arc using a cubic
               // Bezier curve.
 
@@ -4787,16 +4789,28 @@ PDF tiling pattern support. Uncolored only.
                     color = null;
                   }
 
-                  if (color) {
+                  if (strokeColor == null) strokeColor = color;
+
+                  if (strokeColor) {
                     this.fillColor(color);
+                    this.strokeColor(strokeColor);
                   }
 
-                  return this.addContent(`f${this._windingRule(rule)}`);
+                  return this.addContent(`B${this._windingRule(rule)}`);
                 },
 
                 stroke(color) {
-                  if (color) {
-                    this.strokeColor(color);
+                  let rule;
+                  strokeColor = this.color;
+                  if (fillColor) {
+                    rule = fillColor;
+                    this.fillColor(fillColor);
+                    this.strokeColor(strokeColor);
+
+                    return this.addContent(`B${this._windingRule(rule)}`);
+                  } else {
+                    rule = color;
+                    this.strokeColor(strokeColor);
                   }
 
                   return this.addContent("S");
@@ -17196,7 +17210,7 @@ Please pipe the document into a Node stream.\
                   s.match_length <= 5 &&
                   (s.strategy === Z_FILTERED ||
                     (s.match_length === MIN_MATCH &&
-                      s.strstart - s.match_start > 4096) /*TOO_FAR*/)
+                      s.strstart - s.match_start > 4096)) /*TOO_FAR*/
                 ) {
                   /* If prev_match is also MIN_MATCH, match_start is garbage
                    * but we will ignore the current match anyway.
@@ -22002,7 +22016,7 @@ exports.inflateUndermine = inflateUndermine;
             var prevlen = -1; /* last emitted length */
             var curlen; /* length of current code */
 
-            var nextlen = tree[0 * 2 + 1]; /* length of next code */ /*.Len*/
+            var nextlen = tree[0 * 2 + 1]; /*.Len*/ /* length of next code */
 
             var count = 0; /* repeat count of the current code */
             var max_count = 7; /* max repeat count */
@@ -22061,11 +22075,11 @@ exports.inflateUndermine = inflateUndermine;
             var prevlen = -1; /* last emitted length */
             var curlen; /* length of current code */
 
-            var nextlen = tree[0 * 2 + 1]; /* length of next code */ /*.Len*/
+            var nextlen = tree[0 * 2 + 1]; /*.Len*/ /* length of next code */
 
             var count = 0; /* repeat count of the current code */
             var max_count = 7; /* max repeat count */
-            var min_count = 4; /* min repeat count */ /* guard already set */
+            var min_count = 4; /* guard already set */ /* min repeat count */
 
             /* tree[max_code+1].Len = -1; */ if (nextlen === 0) {
               max_count = 138;
@@ -28597,8 +28611,8 @@ exports.inflateUndermine = inflateUndermine;
           });
 
           for (
-            var es6Symbols = // 19.4.2.2, 19.4.2.3, 19.4.2.4, 19.4.2.6, 19.4.2.8, 19.4.2.9, 19.4.2.10, 19.4.2.11, 19.4.2.12, 19.4.2.13, 19.4.2.14
-              "hasInstance,isConcatSpreadable,iterator,match,replace,search,species,split,toPrimitive,toStringTag,unscopables".split(
+            var es6Symbols = "hasInstance,isConcatSpreadable,iterator,match,replace,search,species,split,toPrimitive,toStringTag,unscopables".split(
+                // 19.4.2.2, 19.4.2.3, 19.4.2.4, 19.4.2.6, 19.4.2.8, 19.4.2.9, 19.4.2.10, 19.4.2.11, 19.4.2.12, 19.4.2.13, 19.4.2.14
                 ","
               ),
               j = 0;
@@ -68154,7 +68168,9 @@ exports.inflateUndermine = inflateUndermine;
                 (first === '"' ||
                   first === "'" ||
                   first === "`" ||
-                  last === '"' || last === "'" || last === "`") &&
+                  last === '"' ||
+                  last === "'" ||
+                  last === "`") &&
                 first !== last
               ) {
                 throw new $SyntaxError(
@@ -69072,7 +69088,8 @@ exports.inflateUndermine = inflateUndermine;
               if (
                 0xd800 <= code &&
                 code <= 0xdbff &&
-                0xdc00 <= next && next <= 0xdfff
+                0xdc00 <= next &&
+                next <= 0xdfff
               ) {
                 this.pos++;
                 return (code - 0xd800) * 0x400 + (next - 0xdc00) + 0x10000;

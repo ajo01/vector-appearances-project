@@ -287,6 +287,10 @@
     this.doc.rect(x, y, width, height);
   };
 
+  canvas2pdf.PdfContext.prototype.fillAndStroke = function() {
+    this.doc.fillAndStroke();
+  };
+
   canvas2pdf.PdfContext.prototype.fillRect = function(x, y, width, height) {
     this.doc.rect(x, y, width, height);
     this.doc.fill();
