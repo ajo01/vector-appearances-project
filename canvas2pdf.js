@@ -122,6 +122,8 @@
     this.stream = doc.pipe(stream);
     this.doc = doc;
 
+    this.stack = [];
+
     var fontValue = "10px Helvetica";
     this.textAlign = "left";
     this.textBaseline = "alphabetic";
@@ -164,18 +166,13 @@
         _this.doc.strokeColor(color.c, color.a);
       },
     });
-    Object.defineProperty(this, "lineWidth", {
-      get: function() {
-        return 2;
-      },
-      set: function(value) {
-        _this.doc.lineWidth(value);
-      },
-    });
-
-    // Object.defineProperty(this, 'lineWidth', {
-    //   get: function () { return _this.doc.lineWidth(); },
-    //   set: function (value) { _this.doc.lineWidth(value); },
+    // Object.defineProperty(this, "lineWidth", {
+    //   get: function() {
+    //     return _this.doc.lineWidth();
+    //   },
+    //   set: function(value) {
+    //     _this.doc.lineWidth(value);
+    //   },
     // });
     Object.defineProperty(this, "lineCap", {
       get: function() {
@@ -221,6 +218,7 @@
     this.fillStyle = "rgb(0,0,0)";
   };
   canvas2pdf.PdfContext.prototype.end = function() {
+    this._addToPath("end", arguments);
     this.doc.end();
   };
 
@@ -247,60 +245,76 @@
 
   canvas2pdf.PdfContext.prototype.beginPath = function() {
     // no-op
+    this._addToPath("endPath", arguments);
+    this.doc.endPath();
   };
 
   canvas2pdf.PdfContext.prototype.moveTo = function(x, y) {
+    this._addToPath("moveTo", arguments);
     this.doc.moveTo(x, y);
   };
 
   canvas2pdf.PdfContext.prototype.closePath = function() {
+    this._addToPath("closePath");
+
     this.doc.closePath();
   };
 
   canvas2pdf.PdfContext.prototype.lineTo = function(x, y) {
+    this._addToPath("lineTo", arguments);
     this.doc.lineTo(x, y);
   };
 
   canvas2pdf.PdfContext.prototype.stroke = function() {
     this.doc.stroke();
+    this._restorePath();
   };
 
-  canvas2pdf.PdfContext.prototype.circleFillStroke = function(
-    x,
-    y,
-    rad,
-    lw,
-    fc,
-    sc
-  ) {
-    this.doc
-      .circle(x, y, rad)
-      .lineWidth(lw)
-      .fillAndStroke(fc, sc);
+  canvas2pdf.PdfContext.prototype._restorePath = function() {
+    this.stack.forEach((key) => {
+      if (this.stack && key && this.doc[key.command]) {
+        this.doc[key.command].apply(this.doc, key.params);
+      }
+    });
+  };
+
+  canvas2pdf.PdfContext.prototype._addToPath = function(command, params) {
+    this.stack.push({ command, params });
   };
 
   canvas2pdf.PdfContext.prototype.fill = function() {
     this.doc.fill();
+    this._restorePath();
   };
 
   canvas2pdf.PdfContext.prototype.rect = function(x, y, width, height) {
+    this._addToPath("rect", arguments);
+
     this.doc.rect(x, y, width, height);
   };
 
   canvas2pdf.PdfContext.prototype.fillRect = function(x, y, width, height) {
+    this.doc.endPath();
     this.doc.rect(x, y, width, height);
     this.doc.fill();
+
+    this._restorePath();
   };
 
   canvas2pdf.PdfContext.prototype.strokeRect = function(x, y, width, height) {
+    this.doc.endPath();
     this.doc.rect(x, y, width, height);
     this.doc.stroke();
+
+    this._restorePath();
   };
 
   /**
    * "Clears" a canvas by just drawing a white rectangle in the current group.
    */
   canvas2pdf.PdfContext.prototype.clearRect = function(x, y, width, height) {
+    this._addToPath("clearRect", arguments);
+
     var oldFill = this.doc.fillColor();
     this.doc.fillColor("white");
     this.doc.rect(x, y, width, height);
@@ -309,6 +323,7 @@
   };
 
   canvas2pdf.PdfContext.prototype.arc = function(x, y, r, a0, a1, ccw) {
+    this._addToPath("arc", arguments);
     var pi = Math.PI,
       tau = 2 * pi,
       epsilon = 1e-6,
@@ -397,10 +412,12 @@
     x,
     y
   ) {
+    this._addToPath("bezierCurveTo", arguments);
     this.doc.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
   };
 
   canvas2pdf.PdfContext.prototype.quadraticCurveTo = function(cpx, cpy, x, y) {
+    this._addToPath("quadraticCurveTo", arguments);
     this.doc.quadraticCurveTo(cpx, cpy, x, y);
   };
   canvas2pdf.PdfContext.prototype.createLinearGradient = function(
@@ -460,6 +477,7 @@
   };
 
   canvas2pdf.PdfContext.prototype.fillText = function(text, x, y) {
+    this._addToPath("fillText", arguments);
     x = this.adjustTextX(text, x);
     y = this.adjustTextY(text, y);
     this.doc.text(text, x, y, {
@@ -470,6 +488,7 @@
   };
 
   canvas2pdf.PdfContext.prototype.strokeText = function(text, x, y) {
+    this._addToPath("strokeText", arguments);
     x = this.adjustTextX(text, x);
     y = this.adjustTextY(text, y);
     this.doc.text(text, x, y, { lineBreak: false, stroke: true, fill: false });
@@ -483,6 +502,7 @@
   };
 
   canvas2pdf.PdfContext.prototype.clip = function() {
+    this._addToPath("clip", arguments);
     this.doc.clip();
   };
 

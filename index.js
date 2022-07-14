@@ -10,7 +10,7 @@ Webviewer(
   },
   document.getElementById("viewer")
 ).then((instance) => {
-  // var ctx = new canvas2pdf.PdfContext(blobStream());
+  var ctx = new canvas2pdf.PdfContext(blobStream());
 
   const { Annotations, annotationManager, documentViewer } = instance.Core;
   let windowCnt = 0;
@@ -18,7 +18,7 @@ Webviewer(
   documentViewer.addEventListener("documentLoaded", () => {
     // from https://www.pdftron.com/api/web/Core.Annotations.html#.setCustomDrawHandler
     Annotations.setCustomDrawHandler(Annotations.RectangleAnnotation, function(
-      ctx,
+      ctxasasa,
       pageMatrix,
       rotation,
       options
@@ -40,7 +40,7 @@ Webviewer(
         const fontSize = 10;
         ctx.fillText(annot.Id, annot.X, annot.Y + fontSize); // Draw at annotation location
 
-        // ctx.end();
+        ctx.end();
       }
     });
 
@@ -58,9 +58,9 @@ Webviewer(
     // need to draw the annotation otherwise it won't show up until the page is refreshed
     annotationManager.redrawAnnotation(rectangleAnnot);
 
-    // ctx.stream.on("finish", function() {
-    //   var blob = ctx.stream.toBlob("application/pdf");
-    //   saveAs(blob, "example.pdf", true);
-    // });
+    ctx.stream.on("finish", function() {
+      var blob = ctx.stream.toBlob("application/pdf");
+      saveAs(blob, "example.pdf", true);
+    });
   });
 });

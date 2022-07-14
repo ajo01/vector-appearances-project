@@ -4802,6 +4802,11 @@ PDF tiling pattern support. Uncolored only.
                   return this.addContent("S");
                 },
 
+
+                endPath() {
+                  return this.addContent("n");
+                },
+
                 fillAndStroke(fillColor, strokeColor, rule) {
                   if (strokeColor == null) {
                     strokeColor = fillColor;
@@ -4828,7 +4833,7 @@ PDF tiling pattern support. Uncolored only.
                 },
 
                 clip(rule) {
-                  return this.addContent(`W${this._windingRule(rule)} n`);
+                  return this.addContent(`W${this._windingRule(rule)}`);
                 },
 
                 transform(m11, m12, m21, m22, dx, dy) {
