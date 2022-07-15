@@ -166,14 +166,15 @@
         _this.doc.strokeColor(color.c, color.a);
       },
     });
-    // Object.defineProperty(this, "lineWidth", {
-    //   get: function() {
-    //     return _this.doc.lineWidth();
-    //   },
-    //   set: function(value) {
-    //     _this.doc.lineWidth(value);
-    //   },
-    // });
+    Object.defineProperty(this, "lineWidth", {
+      get: function() {
+        console.log(" _this.doc.lineWidth()", _this.doc.lineWidth());
+        return _this.doc.lineWidth();
+      },
+      set: function(value) {
+        _this.doc.lineWidth(value);
+      },
+    });
     Object.defineProperty(this, "lineCap", {
       get: function() {
         return _this.doc.lineCap();
